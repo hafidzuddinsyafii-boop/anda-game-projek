@@ -18,6 +18,9 @@
 # python battleship_elite_v2.py
 #
 # =========================================================
+#        orang 1 start -> tempat kapal
+# =========================================================
+
 
 import tkinter as tk
 from tkinter import messagebox
@@ -60,11 +63,11 @@ class BattleshipElite:
         # GAME VARIABLES
         # ===============================
 
-        self.orientation = "H"
+        self.orientation = "H" # Menentukan orientasi awal penempatan kapal (Horizontal)
 
-        self.player_turn = False
+        self.player_turn = False # Status awal giliran pemain (False karena harus menempatkan kapal dulu)
 
-        self.placing_index = 0
+        self.placing_index = 0 # Menelusuri indeks kapal mana yang sedang ditempatkan dari daftar SHIP_SIZES
 
         self.player_hits = 0
         self.ai_hits = 0
@@ -72,11 +75,12 @@ class BattleshipElite:
         self.player_destroyed = 0
         self.ai_destroyed = 0
 
-        self.hunt_targets = []
+        self.hunt_targets = [] # Menyimpan koordinat target buruan AI saat berhasil mengenai kapal pemain
 
-        self.difficulty = tk.StringVar(value="Medium")
+        self.difficulty = tk.StringVar(value="Medium") # Menyimpan tingkat kesulitan AI menggunakan variabel string Tkinter
 
         # boards
+        # Membuat representasi papan 10x10 berupa list dua dimensi berisi karakter "~" (air)
         self.player_board = [["~"] * SIZE for _ in range(SIZE)]
         self.ai_board = [["~"] * SIZE for _ in range(SIZE)]
 
@@ -91,11 +95,15 @@ class BattleshipElite:
 
         # generate AI ships
         self.generate_ai_ships()
+# =========================================================
+#       orang 1 end -> tempat kapal
+# =========================================================
 
-    # =====================================================
-    # UI
-    # =====================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# =========================================================
+#    orang 2 start -> UI
+# =========================================================
     def create_ui(self):
 
         title = tk.Label(
@@ -132,7 +140,7 @@ class BattleshipElite:
             fg="black",
             font=("Arial", 10, "bold"),
             relief="flat",
-            command=self.rotate_ship
+            command=self.rotate_ship # Menghubungkan tombol ke fungsi pengubah rotasi kapal
         )
 
         rotate_btn.pack(side=tk.LEFT, padx=5)
@@ -154,7 +162,7 @@ class BattleshipElite:
             fg="white",
             font=("Arial", 10, "bold"),
             relief="flat",
-            command=self.reset_game
+            command=self.reset_game # Menghubungkan tombol untuk mereset permainan ke awal
         )
 
         restart_btn.pack(side=tk.LEFT, padx=5)
@@ -253,11 +261,15 @@ class BattleshipElite:
         self.ai_buttons = []
 
         self.create_buttons()
+# ========================================================
+#              orang 2 end -> UI
+# ========================================================
 
-    # =====================================================
-    # BUTTONS
-    # =====================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ========================================================
+#              orang 3 start -> BUTTONS
+# ========================================================
     def create_buttons(self):
 
         for r in range(SIZE):
@@ -276,19 +288,19 @@ class BattleshipElite:
                     relief="flat",
                     activebackground=NEON_BLUE,
                     command=lambda r=r, c=c:
-                    self.place_player_ship(r, c)
+                    self.place_player_ship(r, c) # Fungsi penempatan kapal dipicu saat tombol papan player diklik
                 )
 
                 btn.grid(row=r, column=c, padx=1, pady=1)
 
                 btn.bind(
-                    "<Enter>",
+                    "<Enter>", # Event trigger ketika kursor mouse masuk ke area tombol
                     lambda e, r=r, c=c:
                     self.preview_ship(r, c)
                 )
 
                 btn.bind(
-                    "<Leave>",
+                    "<Leave>", # Event trigger ketika kursor mouse keluar meninggalkan area tombol
                     lambda e:
                     self.clear_preview()
                 )
@@ -313,7 +325,7 @@ class BattleshipElite:
                     relief="flat",
                     activebackground=NEON_RED,
                     command=lambda r=r, c=c:
-                    self.player_shoot(r, c)
+                    self.player_shoot(r, c) # Fungsi menembak dipicu saat tombol papan musuh diklik
                 )
 
                 btn.grid(row=r, column=c, padx=1, pady=1)
@@ -328,6 +340,7 @@ class BattleshipElite:
 
     def rotate_ship(self):
 
+        # Mengubah nilai orientasi bolak-balik antara Horizontal (H) dan Vertical (V)
         if self.orientation == "H":
             self.orientation = "V"
         else:
@@ -339,7 +352,7 @@ class BattleshipElite:
 
     def preview_ship(self, row, col):
 
-        if self.placing_index >= len(SHIP_SIZES):
+        if self.placing_index >= len(SHIP_SIZES): # Jika semua kapal sudah ditaruh, hentikan proses preview
             return
 
         self.clear_preview()
@@ -354,6 +367,7 @@ class BattleshipElite:
             self.orientation
         )
 
+        # Memberi warna NEON_GREEN jika posisi aman ditaruh, atau NEON_RED jika menabrak/keluar batas papan
         color = NEON_GREEN if valid else NEON_RED
 
         for i in range(size):
@@ -379,36 +393,40 @@ class BattleshipElite:
         for r in range(SIZE):
             for c in range(SIZE):
 
-                if self.player_board[r][c] == "~":
+                if self.player_board[r][c] == "~": # Mengembalikan warna petak kosong kembali ke warna grid standar
 
                     self.player_buttons[r][c].config(
                         bg=GRID
                     )
+# =====================================================
+#             orang 3 end -> BUTTONS
+# =====================================================
 
-    # =====================================================
-    # VALID SHIP
-    # =====================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# ========================================================
+#             orang 4 start -> VALID SHIP
+# ========================================================
     def valid_ship(self, board, row, col, size, orient):
 
         if orient == "H":
 
-            if col + size > SIZE:
+            if col + size > SIZE: # Mengembalikan False jika panjang kapal melebihi batas kanan matriks papan
                 return False
 
             for i in range(size):
 
-                if board[row][col+i] != "~":
+                if board[row][col+i] != "~": # Mengembalikan False jika petak target sudah diisi kapal lain
                     return False
 
         else:
 
-            if row + size > SIZE:
+            if row + size > SIZE: # Mengembalikan False jika panjang kapal melebihi batas bawah matriks papan
                 return False
 
             for i in range(size):
 
-                if board[row+i][col] != "~":
+                if board[row+i][col] != "~": # Mengembalikan False jika petak target sudah diisi kapal lain
                     return False
 
         return True
@@ -425,7 +443,7 @@ class BattleshipElite:
 
             for i in range(size):
 
-                board[row][col+i] = "S"
+                board[row][col+i] = "S" # Menandai koordinat matriks internal dengan huruf "S" (Ship)
 
                 positions.append((row, col+i))
 
@@ -433,12 +451,12 @@ class BattleshipElite:
 
             for i in range(size):
 
-                board[row+i][col] = "S"
+                board[row+i][col] = "S" # Menandai koordinat matriks internal dengan huruf "S" (Ship)
 
                 positions.append((row+i, col))
 
         # weak point = kepala kapal
-        weak = positions[0]
+        weak = positions[0] # Menetapkan elemen koordinat pertama kapal sebagai titik kelemahan fatal
 
         ships.append({
             "positions": positions,
@@ -460,7 +478,7 @@ class BattleshipElite:
 
             placed = False
 
-            while not placed:
+            while not placed: # Terus melakukan acakan koordinat hingga kapal AI berhasil ditempatkan secara valid
 
                 r = random.randint(0, SIZE-1)
                 c = random.randint(0, SIZE-1)
@@ -521,7 +539,7 @@ class BattleshipElite:
 
         self.clear_preview()
 
-        if self.placing_index < len(SHIP_SIZES):
+        if self.placing_index < len(SHIP_SIZES): # Memperbarui teks instruksi ukuran kapal berikutnya yang harus ditaruh
 
             self.info_label.config(
                 text=f"Place ship size {SHIP_SIZES[self.placing_index]}"
@@ -529,7 +547,7 @@ class BattleshipElite:
 
         else:
 
-            self.player_turn = True
+            self.player_turn = True # Mengubah giliran menjadi milik player karena semua kapal telah terpasang
 
             self.info_label.config(
                 text="⚔ BATTLE STARTED!"
@@ -557,7 +575,7 @@ class BattleshipElite:
                 if val == "S":
 
                     # kepala kapal
-                    if (r, c) in weak_points:
+                    if (r, c) in weak_points: # Mewarnai kepala kapal dengan warna magenta dan simbol bintang
 
                         btn.config(
                             bg=WEAK_POINT_COLOR,
@@ -573,7 +591,7 @@ class BattleshipElite:
                         )
 
                 # HIT
-                elif val == "X":
+                elif val == "X": # Menampilkan simbol kilatan kuning jika bagian kapal biasa tertembak
 
                     btn.config(
                         bg=NEON_YELLOW,
@@ -581,7 +599,7 @@ class BattleshipElite:
                     )
 
                 # MISS
-                elif val == "O":
+                elif val == "O": # Mengubah warna tombol menjadi abu-abu jika tembakan meleset ke laut
 
                     btn.config(
                         bg="#5c677d",
@@ -589,13 +607,22 @@ class BattleshipElite:
                     )
 
                 # DESTROYED
-                elif val == "D":
+                elif val == "D": # Mengubah warna menjadi merah neon bersimbol tengkorak jika seluruh bagian kapal hancur
 
                     btn.config(
                         bg=NEON_RED,
                         text="☠"
                     )
-    # =====================================================
+# ========================================================
+#             orang 4 end -> VALID SHIP
+# ========================================================
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ========================================================
+#            orang 5 start -> scoring
+# ========================================================
+# =====================================================
     # SCOREBOARD
     # =====================================================
 
@@ -635,20 +662,20 @@ class BattleshipElite:
             if ship["destroyed"]:
                 continue
 
-            if ship["weak"] == (row, col):
+            if ship["weak"] == (row, col): # Memeriksa apakah koordinat peluru tepat mengenai titik kelemahan (kepala) kapal
 
                 ship["destroyed"] = True
 
                 for r, c in ship["positions"]:
 
-                    board[r][c] = "D"
+                    board[r][c] = "D" # Mengubah status seluruh bagian kapal tersebut menjadi "D" (Destroyed) secara instan
 
                     buttons[r][c].config(
                         bg=NEON_RED,
                         text="☠"
                     )
 
-                return len(ship["positions"])
+                return len(ship["positions"]) # Mengembalikan total ukuran kapal untuk kalkulasi hit instan
 
         return 0
 
@@ -658,7 +685,7 @@ class BattleshipElite:
 
     def all_destroyed(self, ships):
 
-        return all(ship["destroyed"] for ship in ships)
+        return all(ship["destroyed"] for ship in ships) # Mengembalikan True jika seluruh objek kapal di dalam list berstatus hancur
 
     # =====================================================
     # PLAYER SHOOT
@@ -666,12 +693,12 @@ class BattleshipElite:
 
     def player_shoot(self, row, col):
 
-        if not self.player_turn:
+        if not self.player_turn: # Mencegah player menembak saat giliran AI sedang berjalan
             return
 
         val = self.ai_board[row][col]
 
-        if val in ["X", "O", "D"]:
+        if val in ["X", "O", "D"]: # Mengabaikan tembakan jika player mengklik kotak yang sudah pernah ditembak sebelumnya
             return
 
         # weak point
@@ -694,7 +721,7 @@ class BattleshipElite:
                 text="☠ ENEMY SHIP DESTROYED!"
             )
 
-            if self.all_destroyed(self.ai_ships):
+            if self.all_destroyed(self.ai_ships): # Validasi apakah semua kapal AI musuh telah rata dihancurkan
 
                 self.game_over(True)
 
@@ -733,7 +760,7 @@ class BattleshipElite:
                 text="🤖 AI TURN"
             )
 
-            self.root.after(700, self.ai_turn)
+            self.root.after(700, self.ai_turn) # Menjalankan giliran AI secara otomatis setelah jeda waktu 700 milidetik
 
     # =====================================================
     # AI TURN
@@ -752,7 +779,7 @@ class BattleshipElite:
             # MEDIUM / HARD
             else:
 
-                if self.hunt_targets:
+                if self.hunt_targets: # Jika daftar koordinat berburu terisi, AI akan memprioritaskan menembak area sekitar ledakan tersebut
 
                     row, col = self.hunt_targets.pop(0)
 
@@ -763,7 +790,7 @@ class BattleshipElite:
                     for r in range(SIZE):
                         for c in range(SIZE):
 
-                            if (r+c) % 2 == 0:
+                            if (r+c) % 2 == 0: # Menggunakan algoritma pola papan catur (Parity Hunt) untuk efisiensi pencarian acak
 
                                 if self.player_board[r][c] in ["~", "S"]:
 
@@ -796,7 +823,7 @@ class BattleshipElite:
                 text="☠ AI DESTROYED YOUR SHIP!"
             )
 
-            if self.all_destroyed(self.player_ships):
+            if self.all_destroyed(self.player_ships): # Validasi jika semua kapal milik player telah berhasil dihancurkan oleh AI
 
                 self.game_over(False)
                 return
@@ -827,7 +854,7 @@ class BattleshipElite:
 
                         if (nr, nc) not in self.hunt_targets:
 
-                            self.hunt_targets.append((nr, nc))
+                            self.hunt_targets.append((nr, nc)) # Menambahkan koordinat sekitar ke daftar buruan AI selanjutnya
 
             self.update_player_board()
 
@@ -905,7 +932,7 @@ class BattleshipElite:
 
     def game_over(self, win):
 
-        if win:
+        if win: # Kondisi percabangan untuk memunculkan notifikasi box dialog sesuai status akhir permainan (Menang/Kalah)
 
             result = messagebox.askyesno(
                 "VICTORY",
@@ -919,13 +946,13 @@ class BattleshipElite:
                 "💀 AI WINS!\n\nPlay Again?"
             )
 
-        if result:
+        if result: # Jika user memilih opsi 'Yes' (True) pada kotak dialog, seluruh game akan di-reset ulang
 
             self.reset_game()
 
         else:
 
-            self.root.destroy()
+            self.root.destroy() # Jika user memilih opsi 'No' (False), window aplikasi utama Tkinter akan ditutup secara aman
 
 
 # =========================================================
